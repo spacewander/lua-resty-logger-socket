@@ -5,10 +5,10 @@ use Cwd qw(cwd);
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+use Test::Nginx::Socket "no_plan";
 our $HtmlDir = html_dir;
 
-my $pwd = cwd();
+our $pwd = cwd();
 
 our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
@@ -27,39 +27,42 @@ run_tests();
 __DATA__
 
 === TEST 1: flush manually
---- http_config eval: $::HttpConfig
+--- http_config eval
+"$::HttpConfig"
+. q{
+    server {
+        listen 29999;
+    }
+}
 --- config
-    location /t {
-        content_by_lua '
+    location = /t {
+        content_by_lua_block {
             collectgarbage()  -- to help leak testing
 
-            local logger = require "resty.logger.socket"
-            if not logger.initted() then
-                local ok, err = logger.init{
+            local logger_socket = require "resty.logger.socket"
+            local logger, err = logger_socket:new({
                     host = "127.0.0.1",
                     port = 29999,
                     flush_limit = 100,
-                }
-            end
+            })
 
-            local bytes, err = logger.log("abc")
+            local bytes, err = logger:log("abc")
             if err then
                 ngx.log(ngx.ERR, err)
             end
 
-            local bytes, err = logger.log("efg")
+            local bytes, err = logger:log("efg")
             if err then
                 ngx.log(ngx.ERR, err)
             end
 
-            local bytes, err = logger.flush()
+            local bytes, err = logger:flush(logger)
             ngx.say(bytes)
-        ';
+        }
     }
 --- request
 GET /t?a=1&b=2
 --- wait: 0.1
---- tcp_listen: 29999
 --- tcp_reply:
 --- no_error_log
 [error]
