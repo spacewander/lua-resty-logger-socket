@@ -70,4 +70,3 @@ GET /t?a=1&b=2
 --- tcp_query_len: 6
 --- response_body
 6
-
