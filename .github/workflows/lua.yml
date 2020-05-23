@@ -21,15 +21,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Install preparation - Install Packages
+      - name: Install Dependencies
         run: |
           sudo apt install -y cpanminus build-essential libncurses5-dev libpcre3-dev libreadline-dev libssl-dev perl luarocks
 
-      - name: Install preparation - Install Test::Nginx
+      - name: Install Test::Nginx
         run: |
           sudo cpanm --notest Test::Nginx > build.log 2>&1 || (cat build.log && exit 1)
 
-      - name: Install
+      - name: Install OpenResty
         run: |
           wget -qO - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
           sudo apt-get -y install software-properties-common
@@ -39,7 +39,7 @@ jobs:
           openresty -V
           git clone https://github.com/openresty/test-nginx.git test-nginx
 
-      - name: Run script
+      - name: Run Nginx Lua Tests
         run: |
           export PATH=$OPENRESTY_PREFIX/nginx/sbin:$PATH
           prove -Itest-nginx/lib -r t
