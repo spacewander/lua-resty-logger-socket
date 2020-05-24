@@ -1,6 +1,5 @@
 Name
 ====
-[![](https://github.com/wingsjj/lua-resty-logger-socket/workflows/Test/badge.svg)](https://github.com/wingsjj/lua-resty-logger-socket/actions)
 
 lua-resty-logger-socket - nonblocking remote access logging for Nginx
 
