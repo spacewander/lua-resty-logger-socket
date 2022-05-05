@@ -30,7 +30,7 @@ local _mt = { __index = _M }
 local is_exiting
 
 if not ngx.config or not ngx.config.ngx_lua_version
-    or ngx.config.ngx_lua_version < 9003 then
+    or (ngx.config.subsystem ~= "stream" and ngx.config.ngx_lua_version < 9003) then
 
     is_exiting = function() return false end
 
